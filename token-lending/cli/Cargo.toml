@@ -1,7 +1,7 @@
 [package]
 authors = ["Port Finance Maintainers <maintainers@solana.foundation>"]
 description = "Port Finance Lending CLI"
-edition = "2018"
+edition = "2021"
 homepage = ""
 license = "Apache-2.0"
 name = "port-lending-cli"

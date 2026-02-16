@@ -13,3 +13,7 @@ test-ledger
 .idea
 staking/program/tests/randoms
 .anchor/
+*.key
+*.pem
+*.p12
+credentials.json
