@@ -9,6 +9,7 @@ test-bpf = []
 
 [dependencies]
 arrayref = "0.3.7"
+do-notation = "0.1"
 bytemuck = { version = "1.14", features = ["derive"] }
 num-derive = "0.4"
 num-traits = "0.2"

@@ -57,7 +57,7 @@ impl TrySub for Reward {
             rhs <- rhs.sub_reward;
             Lift::lift(lhs.try_sub(rhs))
         }
-        .map_or(Ok(None), |r| r.map(Some))?;
+        .map_or(Ok(None), |r: Result<Decimal, ProgramError>| r.map(Some))?;
         Ok(res)
     }
 }
@@ -71,7 +71,7 @@ impl TryAdd for Reward {
             rhs <- rhs.sub_reward;
             Lift::lift(lhs.try_add(rhs))
         }
-        .map_or(Ok(None), |r| r.map(Some))?;
+        .map_or(Ok(None), |r: Result<Decimal, ProgramError>| r.map(Some))?;
         Ok(res)
     }
 }
@@ -86,7 +86,7 @@ impl Reward {
             rhs <- reward.sub_reward;
             Lift::lift(lhs.try_add(rhs))
         }
-        .map_or(Ok(None), |r| r.map(Some))?;
+        .map_or(Ok(None), |r: Result<Decimal, ProgramError>| r.map(Some))?;
         Ok(())
     }
     pub fn try_floor_u64(&self) -> Result<(u64, Option<u64>), ProgramError> {

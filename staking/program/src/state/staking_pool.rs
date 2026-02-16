@@ -79,7 +79,7 @@ impl TryDiv<u64> for RatePerSlot {
                 lhs <- self.sub_reward;
                 Lift::lift(lhs.try_div(Decimal::from(rhs)))
             }
-            .map_or(Ok(None), |r| r.map(Some))?,
+            .map_or(Ok(None), |r: Result<Decimal, ProgramError>| r.map(Some))?,
         })
     }
 }
@@ -94,7 +94,7 @@ impl TryMul<u64> for RatePerSlot {
                 lhs <- self.sub_reward;
                 Lift::lift(lhs.try_mul(Decimal::from(rhs)))
             }
-            .map_or(Ok(None), |r| r.map(Some))?,
+            .map_or(Ok(None), |r: Result<Decimal, ProgramError>| r.map(Some))?,
         })
     }
 }
@@ -208,12 +208,12 @@ impl StakingPool {
                 self.rate_per_slot.sub_reward = (m! {
                     reward_rate <- self.rate_per_slot.sub_reward;
                         Lift::lift(reward_rate.try_add(sub_reward_rate_change.unwrap_or_else(Decimal::zero)))
-                    }).map_or(Ok(None), |r| r.map(Some))?;
+                    }).map_or(Ok(None), |r: Result<Decimal, ProgramError>| r.map(Some))?;
             } else {
                 self.rate_per_slot.sub_reward = (m! {
                     reward_rate <- self.rate_per_slot.sub_reward;
                         Lift::lift(reward_rate.try_sub(sub_reward_rate_change.unwrap_or_else(Decimal::zero)))
-                    }).map_or(Ok(None), |r| r.map(Some)).map_err(|_| StakingError::ReduceRewardTooMuch)?;
+                    }).map_or(Ok(None), |r: Result<Decimal, ProgramError>| r.map(Some)).map_err(|_| StakingError::ReduceRewardTooMuch)?;
             }
         }
 
