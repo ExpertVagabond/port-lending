@@ -18,10 +18,6 @@ use solana_program::{
 use spl_token::solana_program::instruction::AccountMeta;
 use spl_token::solana_program::program_option::COption;
 use spl_token::state::{Account, Mint};
-use switchboard_program::{
-    get_aggregator, get_aggregator_result, FastRoundResultAccountData, SwitchboardAccountType,
-};
-
 use port_finance_staking::instruction::{deposit, withdraw};
 use port_finance_staking::state::stake_account::StakeAccount;
 
@@ -37,8 +33,6 @@ use crate::{
         ReserveCollateral, ReserveConfig, ReserveLiquidity,
     },
 };
-use switchboard_v2::AggregatorAccountData;
-
 const PYTH: &str = "FsJ3A3u2vn5cTVofAjvy6y5kwABJAqYWpe4975bi2epH";
 const PYTH_DEV: &str = "gSbePebfvPy7tRqimPoVecS2UsBvYv46ynrzWocc92s";
 
@@ -2385,80 +2379,11 @@ fn unpack_mint(data: &[u8]) -> Result<Mint, LendingError> {
 }
 
 fn get_switchboard_price(
-    switchboard_feed_account: &AccountInfo,
-    clock: &Clock,
+    _switchboard_feed_account: &AccountInfo,
+    _clock: &Clock,
 ) -> Result<Decimal, ProgramError> {
-    if is_switchbaord_program_v2(switchboard_feed_account.owner) {
-        return get_switchboard_price_v2(switchboard_feed_account, clock);
-    }
-
-    const STALE_AFTER_SLOTS_ELAPSED: u64 = 240;
-    let account_buf = switchboard_feed_account.try_borrow_data()?;
-    if account_buf.len() == 0 {
-        msg!("The provided account is empty.");
-        return Err(ProgramError::InvalidAccountData);
-    }
-    let price = if account_buf[0] == SwitchboardAccountType::TYPE_AGGREGATOR as u8 {
-        let aggregator = get_aggregator(switchboard_feed_account).map_err(|e| {
-            msg!("Aggregator parse failed. Please double check the provided address.");
-            e
-        })?;
-        let round_result = get_aggregator_result(&aggregator).map_err(|e| {
-            msg!("Failed to parse an aggregator round. Has update been called on the aggregator?");
-            e
-        })?;
-
-        round_result
-            .round_open_slot
-            .and_then(|slot| {
-                let slots_elapsed = clock.slot.checked_sub(slot)?;
-                if slots_elapsed >= STALE_AFTER_SLOTS_ELAPSED {
-                    msg!("Oracle price is stale");
-                    return None;
-                }
-                round_result.result
-            })
-            .ok_or(LendingError::InvalidOracleConfig)
-    } else if account_buf[0] == SwitchboardAccountType::TYPE_AGGREGATOR_RESULT_PARSE_OPTIMIZED as u8
-    {
-        let feed_data = FastRoundResultAccountData::deserialize(&account_buf).unwrap();
-        Ok(feed_data.result.result)
-    } else {
-        Err(LendingError::InvalidOracleConfig)
-    }?;
-
-    if price < 0.0 {
-        msg!("Oracle price cannot be negative");
-        return Err(LendingError::InvalidOracleConfig.into());
-    }
-
-    Ok(Decimal::from(price))
-}
-
-fn get_switchboard_price_v2(
-    switchboard_feed_info: &AccountInfo,
-    clock: &Clock,
-) -> Result<Decimal, ProgramError> {
-    const STALE_AFTER_SLOTS_ELAPSED: u64 = 240;
-
-    let feed = AggregatorAccountData::new(switchboard_feed_info)?;
-    let slots_elapsed = clock
-        .slot
-        .checked_sub(feed.latest_confirmed_round.round_open_slot)
-        .ok_or(LendingError::MathOverflow)?;
-    if slots_elapsed >= STALE_AFTER_SLOTS_ELAPSED {
-        msg!("Switchboard oracle price is stale");
-        return Err(LendingError::InvalidOracleConfig.into());
-    }
-
-    let price_switchboard_desc = feed.get_result()?;
-    if price_switchboard_desc.mantissa < 0 {
-        msg!("Switchboard oracle price is negative which is not allowed");
-        return Err(LendingError::InvalidOracleConfig.into());
-    }
-    let price = Decimal::from(price_switchboard_desc.mantissa as u128);
-    let exp = Decimal::from((10u128).checked_pow(price_switchboard_desc.scale).unwrap());
-    price.try_div(exp)
+    msg!("Switchboard oracle is deprecated. Please migrate to Pyth oracle.");
+    Err(LendingError::InvalidOracleConfig.into())
 }
 
 fn get_pyth_price(pyth_price_info: &AccountInfo, clock: &Clock) -> Result<Decimal, ProgramError> {
