@@ -15,20 +15,15 @@ use spl_token::{
     instruction::approve,
     state::{Account as Token, AccountState, Mint},
 };
-use switchboard_program::{
-    get_aggregator_result, AggregatorState, FastRoundResultAccountData, RoundResult,
-    SwitchboardAccountType,
-};
 
 use port_finance_staking::state::staking_pool::RatePerSlot;
-use port_finance_variable_rate_lending::math::TryDiv;
 use port_finance_variable_rate_lending::{
     instruction::{
         borrow_obligation_liquidity, deposit_reserve_liquidity,
         deposit_reserve_liquidity_and_obligation_collateral, init_lending_market, init_obligation,
         init_reserve, liquidate_obligation, refresh_reserve,
     },
-    math::{Decimal, Rate, TryAdd, TryMul, WAD},
+    math::{Decimal, Rate, TryAdd, TryMul},
     pyth,
     state::{
         InitLendingMarketParams, InitObligationParams, InitReserveParams, LendingMarket,
@@ -37,8 +32,6 @@ use port_finance_variable_rate_lending::{
         ReserveLiquidity, INITIAL_COLLATERAL_RATIO, PROGRAM_VERSION,
     },
 };
-use quick_protobuf::deserialize_from_slice;
-use switchboard_v2::AggregatorAccountData;
 
 pub mod flash_loan_receiver;
 pub mod genesis;
@@ -1291,87 +1284,6 @@ pub fn add_usdc_pyth_oracle(test: &mut ProgramTest) -> TestOracle {
         Pubkey::from_str(SRM_PYTH_PRICE).unwrap(),
         // Set USDC price to $1
         Decimal::from(1u64),
-    )
-}
-
-pub fn add_sol_switchboard_oracle(
-    test: &mut ProgramTest,
-    parse_optimized: bool,
-) -> (Option<u64>, TestOracle) {
-    let oracle_program_id =
-        Pubkey::from_str("DtmE9D2CSB4L5D6A15mraeEjrGMm6auWVzgaD8hK2tZM").unwrap();
-    let price_pubkey = Pubkey::from_str(if parse_optimized {
-        "DfjRzSdj5wm1kHfijm3dQsoZB7kENWCGGWzwGpGesiYm"
-    } else {
-        "AdtRGGhmqvom3Jemp5YNrxd9q9unX36BZk1pujkkXijL"
-    })
-    .unwrap();
-
-    test.add_account_with_file_data(
-        price_pubkey,
-        u32::MAX as u64,
-        oracle_program_id,
-        &format!("{}", price_pubkey.to_string()),
-    );
-    let filename = &format!("{}", price_pubkey.to_string());
-    let data = read_file(find_file(filename).unwrap_or_else(|| {
-        panic!("Unable to locate {}", filename);
-    }));
-    let out;
-    if data.len() == 0 {
-        panic!("The provided account is empty.");
-    }
-    let slot = if data[0] == SwitchboardAccountType::TYPE_AGGREGATOR as u8 {
-        let aggregator: AggregatorState = deserialize_from_slice(&data[1..]).unwrap();
-        let round_result: RoundResult = get_aggregator_result(&aggregator).unwrap();
-        out = round_result.result.unwrap();
-        Some(round_result.round_open_slot.unwrap())
-    } else if data[0] == SwitchboardAccountType::TYPE_AGGREGATOR_RESULT_PARSE_OPTIMIZED as u8 {
-        let feed_data = FastRoundResultAccountData::deserialize(&data).unwrap();
-        out = feed_data.result.result;
-        None
-    } else {
-        panic!("parse failed.");
-    };
-
-    (
-        slot,
-        TestOracle {
-            price_pubkey,
-            price: Decimal::from_scaled_val(((out * (WAD as f64)) as u64).into()),
-        },
-    )
-}
-
-pub fn add_gst_switchboard_oracle_v2(test: &mut ProgramTest) -> (Option<u64>, TestOracle) {
-    let oracle_program_id =
-        Pubkey::from_str("SW1TCH7qEPTdLsDHRgPuMQjbQxKdH2aBStViMFnt64f").unwrap();
-    let price_pubkey = Pubkey::from_str("JA1GQW8ta1LjNn3h1vZmhL3fWEdZ6F9QfZHvPB4y7fLm").unwrap();
-
-    test.add_account_with_file_data(
-        price_pubkey,
-        u32::MAX as u64,
-        oracle_program_id,
-        &format!("{}", price_pubkey.to_string()),
-    );
-    let filename = &format!("{}", price_pubkey.to_string());
-    let mut data = read_file(find_file(filename).unwrap_or_else(|| {
-        panic!("Unable to locate {}", filename);
-    }));
-
-    if data.len() == 0 {
-        panic!("The provided account is empty.");
-    }
-    let agg_state = bytemuck::from_bytes_mut::<AggregatorAccountData>(&mut data[8..]);
-    let result = agg_state.get_result().unwrap();
-    let price = Decimal::from(result.mantissa as u128);
-    let exp = (10u64).checked_pow(result.scale).unwrap();
-    (
-        Some(agg_state.latest_confirmed_round.round_open_slot),
-        TestOracle {
-            price_pubkey,
-            price: price.try_div(exp).unwrap(),
-        },
     )
 }
 
