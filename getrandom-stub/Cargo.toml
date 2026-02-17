@@ -1,0 +1,10 @@
+[package]
+name = "getrandom"
+version = "0.2.12"
+edition = "2018"
+description = "Stub for BPF builds"
+
+[features]
+custom = []
+std = []
+js = []

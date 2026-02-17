@@ -8,3 +8,6 @@ members = [
 
 [profile.dev]
 split-debuginfo = "unpacked"
+
+[patch.crates-io.getrandom]
+path = "getrandom-stub"
