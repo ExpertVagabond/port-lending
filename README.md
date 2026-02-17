@@ -1,48 +1,73 @@
-# Port Variable Rate Lending
+# Port Finance Lending — Revival
 
-## Bug Bounty
+> Originally built by [Port Finance](https://github.com/port-finance). Revived for the [Solana Graveyard Hackathon](https://solana.com/graveyard-hack) — Migrations Track.
 
-![Logo black@4x (1)](https://user-images.githubusercontent.com/9982417/149652968-819cbc9e-06b7-41fe-b0d3-aa016843b570.png)
+A variable-rate lending protocol for Solana. Deposit assets, earn yield, borrow against collateral — the core DeFi primitive.
 
-We have partnered with Immunefi to offer bug bounty up to 500K:
-https://immunefi.com/bounty/portfinance/
+## What Changed (Revival)
 
-## Development
+Port Finance was a Solana lending protocol that shut down, leaving behind a fully-featured but unmaintained codebase. The program was deployed on mainnet at `Port7uDYB3wk6GJAw4KT1WpTeMtSu9bTcChBHkX2LfR` but the protocol is no longer active.
 
-### Environment Setup
+**Our revival work:**
+- Updated all transitive Rust dependencies for modern toolchain compatibility (Rust 1.79+)
+- Created `getrandom-stub` crate for BPF target compatibility (no OS randomness available)
+- Pinned critical deps to avoid MSRV conflicts: blake3, rayon-core, indexmap, time-core
+- Regenerated `Cargo.lock` for toolchain compatibility
+- Native `cargo check` and `cargo build` pass cleanly on stable Rust
+- BPF build in progress — requires Solana SDK 1.8 era platform-tools (Docker approach planned)
 
-1. Install the latest Rust stable from https://rustup.rs/
-2. Install Solana v1.8.0 or later from https://docs.solana.com/cli/install-solana-cli-tools
-3. Install the `libudev` development package for your distribution (`libudev-dev` on Debian-derived distros, `libudev-devel` on Redhat-derived).
+**What's in the codebase:**
+- **Token Lending Program** (~7,100 lines of Rust): Full lending protocol with reserves, obligations, liquidations, flash loans, rate calculations
+- **Staking Program**: PORT token staking with configurable parameters
+- **CLI Tools**: Management CLIs for both lending and staking
+- Comprehensive test suites, CI configs, and deployment scripts
 
-### Build
+## Architecture
 
-The normal cargo build is available for building programs against your host machine:
 ```
-$ cargo build
+token-lending/
+  program/       — On-chain Solana program (SPL-style, not Anchor)
+    src/
+      processor.rs     — Core instruction handlers
+      state/           — Account state (reserves, obligations, lending market)
+      instruction.rs   — Instruction definitions
+      math/            — Fixed-point math (Rate, Decimal, WAD)
+      error.rs         — Custom error types
+      pyth.rs          — Pyth oracle integration
+  cli/           — Management CLI
+
+staking/
+  program/       — PORT token staking program
+  cli/           — Staking management CLI
 ```
 
-To build BPF Program:
-```
-$ cargo build-bpf
-```
+## Building
 
-### Test
-
-Unit tests contained within all projects can be run with:
+Native build (works on modern Rust):
 ```bash
-$ cargo test      # <-- runs host-based tests
-$ cargo test-bpf  # <-- runs BPF program tests
+cargo build
+cargo test
 ```
 
-
-### Verify Build
-Dump on-chain file to a local file
+BPF build (requires Solana SDK 1.8.x):
+```bash
+cargo build-bpf
 ```
-solana program dump <program-id> <file-name>
+
+## Program ID
+
 ```
-Compare the on-chain file with a local build using `vbindiff`
+Port7uDYB3wk6GJAw4KT1WpTeMtSu9bTcChBHkX2LfR
+```
 
+## Graveyard Hackathon Context
 
+**Track:** Migrations ($7K prizes)
 
+**Original Protocol:** [Port Finance](https://github.com/port-finance) — a Solana lending protocol that offered variable-rate deposits and borrows. The protocol shut down, leaving a complete but unmaintained implementation.
 
+**Revival Focus:** Modernizing the dependency chain to make this production-quality lending codebase buildable and deployable on current Solana infrastructure. The code is architecturally sound — the challenge is purely toolchain evolution.
+
+## License
+
+Apache-2.0 (preserved from original)
