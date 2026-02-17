@@ -11,7 +11,8 @@
 - Replaced dead **Switchboard v1** oracle with deprecation stub
 - **2 programs compile and BPF-build** on modern toolchain
 - **66/66 tests passing** (token-lending program)
-- TypeScript client SDK being built
+- **New TypeScript client SDK** with state decoders, instruction builders, and 52-assertion demo
+- **13 migration stories completed** (see MIGRATION.md)
 
 ### Quick Start
 
