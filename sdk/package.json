@@ -1,0 +1,29 @@
+{
+  "name": "@port-finance/lending-sdk",
+  "version": "0.1.0",
+  "description": "TypeScript client SDK for Port Finance lending protocol",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.91.0",
+    "@solana/spl-token": "^0.3.11",
+    "bn.js": "^5.2.1"
+  },
+  "devDependencies": {
+    "@types/bn.js": "^5.1.5",
+    "typescript": "^5.3.3"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/port-finance/port-lending"
+  },
+  "files": [
+    "dist",
+    "src"
+  ]
+}
