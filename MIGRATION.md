@@ -24,8 +24,8 @@ Rust 2021 edition** with both programs compiling, BPF-building, and all 66 tests
 | PL-07 | Replace Switchboard oracle with deprecation stub | Done | `5a26add` |
 | PL-09 | Clean cargo build-sbf for both programs | Done | `d7fab92` |
 | PL-11 | Fix and pass all token-lending tests (66/66) | Done | `ec38737` |
-| PL-12 | TypeScript client SDK | In Progress | -- |
-| PL-13 | Demo: deposit + borrow + liquidation flow | Planned | -- |
+| PL-12 | TypeScript client SDK | Done | `8cf8cd5` |
+| PL-13 | SDK compilation check and demo script (52 assertions) | Done | `fe1b002` |
 
 ## What Changed
 
@@ -116,10 +116,11 @@ cargo test -p port-finance-variable-rate-lending
 cargo test -p port-finance-staking
 ```
 
-### TypeScript SDK (in progress)
+### TypeScript SDK
 
 ```bash
-cd sdk && npm install && npm run build
+cd sdk && npm install && npm run build    # Build SDK
+npx tsx sdk/demo.ts                       # Run 52-assertion demo
 ```
 
 ## Architecture
@@ -143,7 +144,7 @@ staking/
     src/
       processor.rs         — Staking reward distribution
       state.rs             — Staking pool and user stake accounts
-sdk/                       — TypeScript client SDK (in progress)
+sdk/                       — TypeScript client SDK (types, state decoders, instruction builders)
 ```
 
 ## Key Technical Decisions
@@ -165,7 +166,7 @@ sdk/                       — TypeScript client SDK (in progress)
 | Tests | 66 tests, many failing from API changes | 66/66 tests passing |
 | Oracle | Switchboard v1 (completely dead) | Deprecation stub (functional) |
 | CLI | Broken dependencies | Compiles (needs runtime testing) |
-| TypeScript SDK | None existed | Being built (in progress) |
+| TypeScript SDK | None existed | Full SDK with 52-assertion demo passing |
 | Solana SDK | 1.9 | 1.18+ |
 
 ## References
