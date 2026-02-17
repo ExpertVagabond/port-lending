@@ -12,6 +12,7 @@ hfuzz_workspace
 test-ledger
 .idea
 staking/program/tests/randoms
+sdk/dist/
 .anchor/
 *.key
 *.pem
