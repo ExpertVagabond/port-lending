@@ -13,3 +13,5 @@ test-ledger
 .idea
 staking/program/tests/randoms
 .anchor/
+
+/target
