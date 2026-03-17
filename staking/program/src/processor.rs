@@ -118,7 +118,7 @@ fn process_add_sub_reward_pool(
             Account::unpack(&sub_reward_token_supply_info.data.borrow())
                 .map_err(|_| StakingError::InvalidRewardTokenSupplyAccount)?;
 
-        if sub_reward_supply_token_account.amount < amount as u64 {
+        if sub_reward_supply_token_account.amount < amount {
             msg!(
                 "Insufficient fund for rewarding token, {} < {}",
                 sub_reward_supply_token_account.amount,
@@ -174,7 +174,7 @@ fn process_add_sub_reward_pool(
         spl_token_transfer(TokenTransferParams {
             source: sub_reward_token_supply_info.clone(),
             destination: sub_reward_token_pool_info.clone(),
-            amount: amount as u64,
+            amount: amount,
             authority: transfer_reward_token_authority_info.clone(),
             authority_signer_seeds: &[],
             token_program: token_program_info.clone(),

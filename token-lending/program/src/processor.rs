@@ -2399,13 +2399,11 @@ fn get_switchboard_price(
         return Err(ProgramError::InvalidAccountData);
     }
     let price = if account_buf[0] == SwitchboardAccountType::TYPE_AGGREGATOR as u8 {
-        let aggregator = get_aggregator(switchboard_feed_account).map_err(|e| {
+        let aggregator = get_aggregator(switchboard_feed_account).inspect_err(|e| {
             msg!("Aggregator parse failed. Please double check the provided address.");
-            e
         })?;
-        let round_result = get_aggregator_result(&aggregator).map_err(|e| {
+        let round_result = get_aggregator_result(&aggregator).inspect_err(|e| {
             msg!("Failed to parse an aggregator round. Has update been called on the aggregator?");
-            e
         })?;
 
         round_result
