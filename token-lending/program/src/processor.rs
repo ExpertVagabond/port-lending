@@ -2419,7 +2419,8 @@ fn get_switchboard_price(
             .ok_or(LendingError::InvalidOracleConfig)
     } else if account_buf[0] == SwitchboardAccountType::TYPE_AGGREGATOR_RESULT_PARSE_OPTIMIZED as u8
     {
-        let feed_data = FastRoundResultAccountData::deserialize(&account_buf).unwrap();
+        let feed_data = FastRoundResultAccountData::deserialize(&account_buf)
+            .map_err(|_| LendingError::InvalidOracleConfig)?;
         Ok(feed_data.result.result)
     } else {
         Err(LendingError::InvalidOracleConfig)
@@ -2455,7 +2456,11 @@ fn get_switchboard_price_v2(
         return Err(LendingError::InvalidOracleConfig.into());
     }
     let price = Decimal::from(price_switchboard_desc.mantissa as u128);
-    let exp = Decimal::from((10u128).checked_pow(price_switchboard_desc.scale).unwrap());
+    let exp = Decimal::from(
+        (10u128)
+            .checked_pow(price_switchboard_desc.scale)
+            .ok_or(LendingError::MathOverflow)?,
+    );
     price.try_div(exp)
 }
 
