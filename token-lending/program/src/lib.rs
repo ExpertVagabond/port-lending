@@ -1,6 +1,13 @@
 #![deny(missing_docs)]
+#![deny(clippy::arithmetic_side_effects)]
+#![deny(clippy::integer_division)]
+#![forbid(unsafe_code)]
 
 //! A lending program for the Solana blockchain.
+//!
+//! Security: arithmetic overflow checks enforced via clippy lints.
+//! All account validation is performed in the processor module before
+//! any state mutation. See `processor.rs` for account constraint checks.
 
 pub mod entrypoint;
 pub mod error;
