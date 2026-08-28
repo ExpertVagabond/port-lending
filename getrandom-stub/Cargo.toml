@@ -1,5 +1,6 @@
 [package]
 name = "getrandom"
+authors = ["Matthew Karsten <matthewkarstenconnects@gmail.com>"]
 version = "0.2.12"
 edition = "2018"
 description = "Stub for BPF builds"

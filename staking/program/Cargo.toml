@@ -1,5 +1,6 @@
 [package]
 name = "port-finance-staking"
+authors = ["Matthew Karsten <matthewkarstenconnects@gmail.com>"]
 version = "0.1.0"
 edition = "2018"
 
